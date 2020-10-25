@@ -105,7 +105,7 @@ SunLightLine *findSunlightline(Building arr[], int l, int h, Coordinate S)
     return res; 
 } 
   
-
+//Eliminate Coordinates that are not in sun light
 
 SunLightLine *SunLightLine::Merge(SunLightLine *other) 
 { 
