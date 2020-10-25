@@ -1,1 +1,190 @@
+// Algorithm 
+// 1.Assume sun light Source is always left or right side of the buildings
+// 2.Calculate the coordinates of buildings that have exposer of sunlight using the skyline problem concept.
+//3.Calculate the coordinate from these coordinates.
+// C++ Code
 
+#include<iostream> 
+using namespace std; 
+
+struct Building 
+{ 
+    float left;  
+    float ht;    
+    float right; 
+};
+
+ struct Coordinate{
+      float x;
+      float y;
+  }; 
+
+class Strip 
+{ 
+    float left;  
+    float ht; 
+public: 
+    Strip(float l=0, float h=0) 
+    { 
+        left = l; 
+        ht = h; 
+    } 
+    friend class SunLightLine; 
+}; 
+  
+
+class SunLightLine 
+{ 
+    Strip *arr;   
+    float capacity; 
+    int n;    
+public: 
+    ~SunLightLine() {  delete[] arr;  } 
+    int count()  { return n;   } 
+  
+  
+    SunLightLine* Merge(SunLightLine *other); 
+  
+   
+    SunLightLine(int cap) 
+    { 
+        capacity = cap; 
+        arr = new Strip[cap]; 
+        n = 0; 
+    } 
+  
+  
+    void append(Strip *st) 
+    { 
+        
+        if (n>0 && arr[n-1].ht == st->ht) 
+            return; 
+        if (n>0 && arr[n-1].left == st->left) 
+        { 
+            arr[n-1].ht = max(arr[n-1].ht, st->ht); 
+            return; 
+        } 
+  
+        arr[n] = *st; 
+        n++; 
+    } 
+  // calculate length of building  from coordinates and print them
+    void print() 
+    { 
+        for (int i=1; i<n; i++) 
+        { if(i%3==1){
+            cout << (arr[i+1].left-arr[i].left) + (arr[i+1].ht-arr[i].ht)<<endl; 
+        }
+        } 
+    } 
+}; 
+  // find points that are exposed to sunlight
+
+SunLightLine *findSunlightline(Building arr[], int l, int h, Coordinate S) 
+{ 
+    if (l == h) 
+    { 
+        SunLightLine *res = new SunLightLine(2); 
+        res->append(new Strip(arr[l].left, arr[l].ht)); 
+        res->append(new Strip(arr[l].right, 0)); 
+        return res; 
+    } 
+  
+    int mid = (l + h)/2; 
+  
+   
+    SunLightLine *sl = findSunlightline(arr, l, mid, S); 
+    SunLightLine *sr = findSunlightline(arr, mid+1, h, S); 
+    SunLightLine *res = sl->Merge(sr); 
+  
+    
+    delete sl; 
+    delete sr; 
+  
+    
+    return res; 
+} 
+  
+
+
+SunLightLine *SunLightLine::Merge(SunLightLine *other) 
+{ 
+    
+    SunLightLine *res = new SunLightLine(this->n + other->n); 
+  
+    float h1 = 0, h2 = 0; 
+  
+   
+    int i = 0, j = 0; 
+    while (i < this->n && j < other->n) 
+    { 
+        
+        if (this->arr[i].left < other->arr[j].left) 
+        { 
+            float x1 = this->arr[i].left; 
+            h1 = this->arr[i].ht; 
+  
+            
+            float maxh = max(h1, h2); 
+  
+            res->append(new Strip(x1, maxh)); 
+            i++; 
+        } 
+        else
+        { 
+            float x2 = other->arr[j].left; 
+            h2 = other->arr[j].ht; 
+            float maxh = max(h1, h2); 
+            res->append(new Strip(x2, maxh)); 
+            j++; 
+        } 
+    } 
+  
+   
+    while (i < this->n) 
+    { 
+        res->append(&arr[i]); 
+        i++; 
+    } 
+    while (j < other->n) 
+    { 
+        res->append(&other->arr[j]); 
+        j++; 
+    } 
+    return res; 
+} 
+  
+
+int main() 
+{ 
+    // Building coordinates
+    Coordinate arr1[] = {{4,0}, {4,-5}, {7,-5}, {7,0},
+                        {0.4,-2}, {0.4,-5}, {2.5,-5},{2.5,-2}};
+  // source coordinate
+  Coordinate S = {-3.5,1};
+    int n = sizeof(arr1)/sizeof(arr1[0]);
+    Building arr[n]={0};
+   
+                        
+    
+    int k=0,l=0;
+    //  Convert 4 given coordinates of each  building into 
+    //  left,right,height of building 
+                        for(int i=0;i<n;i++){
+                            
+                            if(i%4==0){
+                            arr[k].ht = arr1[i+1].y-arr1[i].y;
+                            arr[k].left = arr1[i].x;
+                            k++;
+                        }
+                        if(i%4==3){
+                            arr[l].right = arr1[i].x;
+                            l++;
+                        }
+                        }
+  
+    
+    SunLightLine *ptr = findSunlightline(arr, 0, n-1,S); 
+    ptr->print(); 
+    return 0; 
+}
